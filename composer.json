@@ -1,0 +1,24 @@
+{
+  "name": "hypario/container",
+  "authors": [
+    {
+      "name": "Fabien Duterte",
+      "email": "fabienduterte@orange.fr"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Hypario\\": "src",
+      "Test\\": "tests"
+    }
+  },
+  "require": {
+    "php": "^7.2",
+    "psr/container": "^1.0",
+    "hypario/router": "^1.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.5",
+    "squizlabs/php_codesniffer": "^3.4"
+  }
+}
