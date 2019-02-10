@@ -111,6 +111,8 @@ class Container implements ContainerInterface
         if (array_key_exists($id, $this->definitions)) {
             if ($this->definitions[$id] instanceof FactoryDefinition) {
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]->getId());
+            } elseif (is_callable($this->definitions[$id])) {
+                return $this->definitions[$id]($this);
             } else {
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]);
             }
