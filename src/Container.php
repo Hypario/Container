@@ -102,7 +102,6 @@ class Container implements ContainerInterface
     /**
      * @param $id
      *
-     * @throws ContainerException
      * @throws \ReflectionException
      *
      * @return mixed
@@ -115,25 +114,27 @@ class Container implements ContainerInterface
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]->getId());
             } elseif (\is_callable($this->definitions[$id])) {
                 return $this->definitions[$id]($this);
+            }elseif (is_string($this->definitions[$id])) {
+                try {
+                    $reflectedClass = new \ReflectionClass($this->definitions[$id]);
+                } catch (\ReflectionException $e) {
+                    return $this->definitions[$id];
+                }
             } else {
-                $reflectedClass = new \ReflectionClass($this->definitions[$id]);
+                return $this->definitions[$id];
             }
         } else {
             $reflectedClass = new \ReflectionClass($id);
         }
-        // look if it is instantiable, throw an error otherwise
-        if ($reflectedClass->isInstantiable()) {
-            $constructor = $reflectedClass->getConstructor();
-            // if the class have a constructor we solve it and return an instance, else an instance is returned
-            if (null !== $constructor) {
-                $parameters = $this->solveConstructor($constructor);
+        // we know the class is instanciable because else it would have thrown a NotFoundException
+        $constructor = $reflectedClass->getConstructor();
+        // if the class have a constructor we solve it and return an instance, else an instance is returned
+        if (null !== $constructor) {
+            $parameters = $this->solveConstructor($constructor);
 
-                return $reflectedClass->newInstanceArgs($parameters);
-            }
-
-            return $reflectedClass->newInstance();
+            return $reflectedClass->newInstanceArgs($parameters);
         }
-        throw new ContainerException("{$reflectedClass->getName()} is not instanciable");
+        return $reflectedClass->newInstance();
     }
 
     /**

@@ -21,23 +21,24 @@ class Builder
     }
 
     /**
-     * @param string $path the path to the definition.
+     * @param string | array $definition the path to the definition.
      *
      * @throws TypeException Wrong type of definition
-     * @throws \Exception Defintion already added
      *
      * @return void
      */
-    public function addDefinitions(string $path): void
+    public function addDefinitions($definition): void
     {
         // get the content of the file else throw an exception if not found
-        $required = require_once($path);
-        if (\is_array($required)) {
-            $this->definitions[] = $required;
-        } elseif ($required == 1) {
-            throw new \Exception("definition $path already added");
-        } else {
-            throw new TypeException('The definition must return an array');
+        if (is_string($definition)) {
+            $required = require($definition);
+            if (\is_array($required)) {
+                $this->definitions[] = $required;
+            } else {
+                throw new TypeException('The definition must return an array');
+            }
+        } elseif (is_array($definition)) {
+            $this->definitions[] = $definition;
         }
     }
 
