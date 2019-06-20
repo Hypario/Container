@@ -10,7 +10,6 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Container implements ContainerInterface
 {
-
     /**
      * @var array
      */
@@ -23,6 +22,7 @@ class Container implements ContainerInterface
 
     /**
      * Container constructor.
+     *
      * @param array $definitions
      */
     public function __construct(array $definitions = [])
@@ -38,7 +38,7 @@ class Container implements ContainerInterface
      *
      * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
      * @throws ContainerExceptionInterface Error while retrieving the entry.
-     * @throws \ReflectionException Class does not exist
+     * @throws \ReflectionException        Class does not exist
      *
      * @return mixed Entry.
      */
@@ -47,7 +47,7 @@ class Container implements ContainerInterface
         // if we can get the entry else an error is throw
         if ($this->has($id)) {
             // if the instance is already stocked, it's returned
-            if (array_key_exists($id, $this->instances)) {
+            if (\array_key_exists($id, $this->instances)) {
                 return $this->instances[$id];
             }
             // else we try to get the instance
@@ -58,13 +58,13 @@ class Container implements ContainerInterface
             }
             // The instance is stocked (here the & is important) and returned
             $this->instances[$id] = &$instance;
-            if (array_key_exists($id, $this->definitions)) {
+            if (\array_key_exists($id, $this->definitions)) {
                 unset($this->definitions[$id]);
             }
+
             return $this->instances[$id];
-        } else {
-            throw new NotFoundException("No entry was found for $id identifier");
         }
+        throw new NotFoundException("No entry was found for $id identifier");
     }
 
     /**
@@ -81,37 +81,39 @@ class Container implements ContainerInterface
     public function has($id): bool
     {
         // if the entry is in our definitions or instances we return true
-        if (array_key_exists($id, $this->definitions) ||
-            array_key_exists($id, $this->instances)
+        if (\array_key_exists($id, $this->definitions) ||
+            \array_key_exists($id, $this->instances)
         ) {
             return true;
-        } else {
-            // else we look if the entry exist and instantiable, return True if it is, False otherwise
-            try {
-                $class = new \ReflectionClass($id);
-                if ($class->isInstantiable()) {
-                    return true;
-                }
-                return false;
-            } catch (\ReflectionException $e) {
-                return false;
+        }
+        // else we look if the entry exist and instantiable, return True if it is, False otherwise
+        try {
+            $class = new \ReflectionClass($id);
+            if ($class->isInstantiable()) {
+                return true;
             }
+
+            return false;
+        } catch (\ReflectionException $e) {
+            return false;
         }
     }
 
     /**
      * @param $id
-     * @return mixed
+     *
      * @throws ContainerException
      * @throws \ReflectionException
+     *
+     * @return mixed
      */
     private function resolve($id)
     {
         // we get the entry by the ReflectionClass
-        if (array_key_exists($id, $this->definitions)) {
+        if (\array_key_exists($id, $this->definitions)) {
             if ($this->definitions[$id] instanceof FactoryDefinition) {
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]->getId());
-            } elseif (is_callable($this->definitions[$id])) {
+            } elseif (\is_callable($this->definitions[$id])) {
                 return $this->definitions[$id]($this);
             } else {
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]);
@@ -123,21 +125,23 @@ class Container implements ContainerInterface
         if ($reflectedClass->isInstantiable()) {
             $constructor = $reflectedClass->getConstructor();
             // if the class have a constructor we solve it and return an instance, else an instance is returned
-            if (!is_null($constructor)) {
+            if (null !== $constructor) {
                 $parameters = $this->solveConstructor($constructor);
+
                 return $reflectedClass->newInstanceArgs($parameters);
-            } else {
-                return $reflectedClass->newInstance();
             }
-        } else {
-            throw new ContainerException("{$reflectedClass->getName()} is not instanciable");
+
+            return $reflectedClass->newInstance();
         }
+        throw new ContainerException("{$reflectedClass->getName()} is not instanciable");
     }
 
     /**
      * @param \ReflectionMethod $constructor
-     * @return array
+     *
      * @throws \ReflectionException
+     *
+     * @return array
      */
     private function solveConstructor(\ReflectionMethod $constructor): array
     {
@@ -152,16 +156,17 @@ class Container implements ContainerInterface
                 $received[] = $params->getDefaultValue();
             }
         }
+
         return $received;
     }
 
     private function isFactory($id): bool
     {
-        if (array_key_exists($id, $this->definitions)
+        if (\array_key_exists($id, $this->definitions)
         and $this->definitions[$id] instanceof FactoryDefinition) {
             return true;
         }
+
         return false;
     }
-
 }

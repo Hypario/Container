@@ -4,7 +4,6 @@ namespace Hypario;
 
 class FactoryDefinition
 {
-
     private $id;
 
     public function __construct($id)
@@ -19,5 +18,4 @@ class FactoryDefinition
     {
         return $this->id;
     }
-
 }

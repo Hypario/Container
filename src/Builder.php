@@ -17,28 +17,27 @@ class Builder
 
     public function __construct()
     {
-        include('functions.php');
+        require_once('functions.php');
     }
 
     /**
      * @param string $path the path to the definition.
      *
-     * @throws NotFoundExceptionInterface file not found
-     * @throws ContainerExceptionInterface Wrong definition
+     * @throws TypeException Wrong type of definition
+     * @throws \Exception Defintion already added
      *
      * @return void
      */
     public function addDefinitions(string $path): void
     {
-        if (!file_exists($path)) {
-            throw new NotFoundException("The definition file does not exist : $path");
+        // get the content of the file else throw an exception if not found
+        $required = require_once($path);
+        if (\is_array($required)) {
+            $this->definitions[] = $required;
+        } elseif ($required == 1) {
+            throw new \Exception("definition $path already added");
         } else {
-            $required = require_once($path);
-            if (is_array($required)) {
-                $this->definitions[] = $required;
-            } else {
-                throw new TypeException("The definition must return an array");
-            }
+            throw new TypeException('The definition must return an array');
         }
     }
 
@@ -50,15 +49,15 @@ class Builder
     public function build(): ContainerInterface
     {
         if (!empty($this->definitions)) {
-            $definitions = array_merge($this->definitions[0]);
-            if (count($this->definitions) > 1) {
-                for ($i = 1; $i < count($this->definitions); $i++) {
+            if (\count($this->definitions) > 1) {
+                $definitions = [];
+                for ($i = 0; $i < \count($this->definitions); $i++) {
                     $definitions = array_merge($definitions, $this->definitions[$i]);
                 }
+                return new Container($definitions);
             }
-            return new Container($definitions);
+            return new Container($this->definitions[0]);
         }
-        return new Container([]);
+        return new Container();
     }
-
 }
