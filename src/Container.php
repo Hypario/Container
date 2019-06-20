@@ -114,7 +114,7 @@ class Container implements ContainerInterface
                 $reflectedClass = new \ReflectionClass($this->definitions[$id]->getId());
             } elseif (\is_callable($this->definitions[$id])) {
                 return $this->definitions[$id]($this);
-            }elseif (is_string($this->definitions[$id])) {
+            } elseif (is_string($this->definitions[$id])) {
                 try {
                     $reflectedClass = new \ReflectionClass($this->definitions[$id]);
                 } catch (\ReflectionException $e) {

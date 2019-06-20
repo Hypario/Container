@@ -3,7 +3,6 @@
 
 namespace Test;
 
-
 class TestClass
 {
 
@@ -13,5 +12,4 @@ class TestClass
     {
         $this->id = uniqid();
     }
-
 }

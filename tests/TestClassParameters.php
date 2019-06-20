@@ -3,7 +3,6 @@
 
 namespace Test;
 
-
 class TestClassParameters
 {
 
@@ -17,5 +16,4 @@ class TestClassParameters
         $this->b = $b;
         $this->randomParameter = $randomParameter;
     }
-
 }

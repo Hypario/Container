@@ -3,7 +3,6 @@
 
 namespace Test;
 
-
 interface TestInterface
 {
 }

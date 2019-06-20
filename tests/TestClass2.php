@@ -3,7 +3,6 @@
 
 namespace Test;
 
-
 class TestClass2
 {
 

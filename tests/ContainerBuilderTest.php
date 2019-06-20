@@ -9,19 +9,22 @@ use Hypario\Exceptions\NotFoundException;
 use function Hypario\factory;
 use PHPUnit\Framework\TestCase;
 
-class ContainerBuilderTest extends TestCase {
+class ContainerBuilderTest extends TestCase
+{
 
     public function setUp()
     {
         $this->builder = new Builder();
     }
 
-    public function testBuildMethod() {
+    public function testBuildMethod()
+    {
         $builder = new Builder();
         $this->assertInstanceOf(Container::class, $builder->build());
     }
 
-    public function testAddDefinitionsMethodFromArray() {
+    public function testAddDefinitionsMethodFromArray()
+    {
         // create a builder
         $builder = new Builder();
         $builder->addDefinitions(['foo' => 'bar']);
@@ -32,7 +35,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertTrue($container->has('foo'));
     }
 
-    public function testAddMultipleDefinitionsFromArrayWithoutDeletingData() {
+    public function testAddMultipleDefinitionsFromArrayWithoutDeletingData()
+    {
         // create a builder and add definitions
         $builder = new Builder();
         $builder->addDefinitions(['foo' => 'bar']);
@@ -45,7 +49,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertTrue($container->has('foofoo'));
     }
 
-    public function testAddMultipleDefinitionsFromArrayDeletingData() {
+    public function testAddMultipleDefinitionsFromArrayDeletingData()
+    {
         // create a builder and add definitions
         $builder = new Builder();
         $builder->addDefinitions(['foo' => 'bar']);
@@ -57,7 +62,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertSame('barbar', $container->get('foo'));
     }
 
-    public function testAddDefinitionsMethodFromFile() {
+    public function testAddDefinitionsMethodFromFile()
+    {
         // create a builder
         $builder = new Builder();
         $builder->addDefinitions('tests/configTest.php');
@@ -68,7 +74,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertTrue($container->has('foo'));
     }
 
-    public function testAddMultipleDefinitionsFromFileWithoutDeletingData() {
+    public function testAddMultipleDefinitionsFromFileWithoutDeletingData()
+    {
         // create a builder and add definitions
         $builder = new Builder();
         $builder->addDefinitions('tests/configTest.php');
@@ -81,7 +88,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertTrue($container->has('foofoo'));
     }
 
-    public function testAddMultipleDefinitionsFromFileDeletingData() {
+    public function testAddMultipleDefinitionsFromFileDeletingData()
+    {
         // create a builder and add definitions
         $builder = new Builder();
         $builder->addDefinitions('tests/configTest.php');
@@ -93,7 +101,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertSame('barbar', $container->get('foo'));
     }
 
-    public function testContainerGetMethod() {
+    public function testContainerGetMethod()
+    {
         $builder = new Builder();
         $builder->addDefinitions(['foo' => 'bar']);
 
@@ -101,14 +110,16 @@ class ContainerBuilderTest extends TestCase {
         $this->assertSame('bar', $container->get('foo'));
     }
 
-    public function testIfHasInterface() {
+    public function testIfHasInterface()
+    {
         $builder = new Builder();
         $container = $builder->build();
 
         $this->assertFalse($container->has(TestInterface::class));
     }
 
-    public function testContainerGetMethodFail() {
+    public function testContainerGetMethodFail()
+    {
         $builder = new Builder();
         $container = $builder->build();
 
@@ -117,7 +128,8 @@ class ContainerBuilderTest extends TestCase {
         $container->get('azeaze');
     }
 
-    public function testContainerSameInstanceForEveryGet() {
+    public function testContainerSameInstanceForEveryGet()
+    {
         $builder = new Builder();
         $container = $builder->build();
 
@@ -127,7 +139,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertSame($call1->id, $call2->id);
     }
 
-    public function testContainerFactory() {
+    public function testContainerFactory()
+    {
         $builder = new Builder();
         $builder->addDefinitions([TestClass::class => factory(TestClass::class)]);
         $container = $builder->build();
@@ -138,7 +151,8 @@ class ContainerBuilderTest extends TestCase {
         $this->assertNotSame($call1->id, $call2->id);
     }
 
-    public function testContainerGetCallable() {
+    public function testContainerGetCallable()
+    {
         $builder = new Builder();
         $builder->addDefinitions(['callable' => function () {
             return 'foo';
@@ -148,18 +162,19 @@ class ContainerBuilderTest extends TestCase {
         $this->assertSame('foo', $container->get('callable'));
     }
 
-    public function testContainerGetClassWithoutConstructor() {
+    public function testContainerGetClassWithoutConstructor()
+    {
         $builder = new Builder();
         $container = $builder->build();
 
         $this->assertInstanceOf(TestClass2::class, $container->get(TestClass2::class));
     }
 
-    public function testContainerGetClassWithParameters() {
+    public function testContainerGetClassWithParameters()
+    {
         $builder = new Builder();
         $container = $builder->build();
 
         $this->assertInstanceOf(TestClassParameters::class, $container->get(TestClassParameters::class));
     }
-
 }
