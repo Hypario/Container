@@ -4,18 +4,14 @@ namespace Test;
 
 use Hypario\Builder;
 use Hypario\Container;
-use Hypario\Exceptions\ContainerException;
 use Hypario\Exceptions\NotFoundException;
 use function Hypario\factory;
+use function Hypario\get;
+use function Hypario\object;
 use PHPUnit\Framework\TestCase;
 
 class ContainerBuilderTest extends TestCase
 {
-
-    public function setUp()
-    {
-        $this->builder = new Builder();
-    }
 
     public function testBuildMethod()
     {
@@ -123,7 +119,6 @@ class ContainerBuilderTest extends TestCase
         $builder = new Builder();
         $container = $builder->build();
 
-        $container = $builder->build();
         $this->expectException(NotFoundException::class);
         $container->get('azeaze');
     }
@@ -170,11 +165,24 @@ class ContainerBuilderTest extends TestCase
         $this->assertInstanceOf(TestClass2::class, $container->get(TestClass2::class));
     }
 
-    public function testContainerGetClassWithParameters()
+    public function testContainerGetClassWithClassParameters()
     {
         $builder = new Builder();
         $container = $builder->build();
 
         $this->assertInstanceOf(TestClassParameters::class, $container->get(TestClassParameters::class));
     }
+
+    public function testObjectDefinition()
+    {
+        $builder = new Builder();
+        $builder->addDefinitions([
+           'Test' => object(TestClassParameters::class)
+               ->constructor(get(TestClass::class), get(TestClass2::class), 2)
+        ]);
+        $container = $builder->build();
+
+        $this->assertEquals(2, $container->get('Test')->randomParameter);
+    }
+
 }
