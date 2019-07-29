@@ -2,20 +2,19 @@
 
 namespace Hypario;
 
-class FactoryDefinition
+use Psr\Container\ContainerInterface;
+
+class FactoryDefinition implements DefinitionsInterface
 {
-    private $id;
+    public $id;
 
     public function __construct($id)
     {
         $this->id = $id;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function handle(ContainerInterface $container, array $definitions, $id)
     {
-        return $this->id;
+        return new \ReflectionClass($definitions[$id]->id);
     }
 }
