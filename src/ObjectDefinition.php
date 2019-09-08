@@ -39,20 +39,35 @@ class ObjectDefinition implements DefinitionsInterface
 
     public function handle(ContainerInterface $container, array $definitions, $id)
     {
+        // get the wanted class
         if (!is_null($this->className)) {
             $reflectedClass = new \ReflectionClass($this->className);
         } else {
             $reflectedClass = new \ReflectionClass($id);
         }
 
+        // params that will be sent to the new instance
         $params = [];
+
         foreach ($this->params as $param) {
-            if (is_object($param)) {
-                $params[] = $container->get($param);
+            $params[] = $container->get($param);
+        }
+
+        // the rest that need to be autowired
+        $rest = array_slice($reflectedClass->getConstructor()->getParameters(), count($params));
+
+        // resolve the rest of constructor
+        /** @var \ReflectionParameter $param */
+        foreach ($rest as $param) {
+            if ($param->getClass()) {
+                $params[] = $container->get($param->getClass()->getName());
             } else {
-                $params[] = $param;
+                $params[] = $param->getDefaultValue();
             }
         }
+
+        // inject the wanted vars to the constr
+
         return $reflectedClass->newInstanceArgs($params);
     }
 
