@@ -53,13 +53,15 @@ class ObjectDefinition implements DefinitionsInterface
         for ($i = 0; $i < count($parameters); $i++) {
             if ($i < count($this->params)) {
                 if ($parameters[$i]->isPassedByReference()) {
-                    $params[] = &$container->get($this->params[$i]);
+                    $var = $container->get($this->params[$i]);
+                    $params[] = &$var;
                 } else {
                     $params[] = $container->get($this->params[$i]);
                 }
             } elseif ($parameters[$i]->getClass()) {
                 if ($parameters[$i]->isPassedByReference()) {
-                    $params[] = &$container->get($parameters[$i]->getClass()->getName());
+                    $var = $container->get($parameters[$i]->getClass()->getName());
+                    $params[] = &$var;
                 } else {
                     $params[] = $container->get($parameters[$i]->getClass()->getName());
                 }
