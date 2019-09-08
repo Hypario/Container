@@ -1,11 +1,15 @@
 {
   "name": "hypario/container",
+  "description": "A simple container i tried to make like PHP-DI",
+  "type": "library",
+  "license": "MIT",
   "authors": [
     {
       "name": "Fabien Duterte",
       "email": "fabienduterte@orange.fr"
     }
   ],
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "Hypario\\": "src",
