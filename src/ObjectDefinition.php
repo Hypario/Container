@@ -49,20 +49,22 @@ class ObjectDefinition implements DefinitionsInterface
         // params that will be sent to the new instance
         $params = [];
 
-        foreach ($this->params as $param) {
-            $params[] = $container->get($param);
-        }
-
-        // the rest that need to be autowired
-        $rest = array_slice($reflectedClass->getConstructor()->getParameters(), count($params));
-
-        // resolve the rest of constructor
-        /** @var \ReflectionParameter $param */
-        foreach ($rest as $param) {
-            if ($param->getClass()) {
-                $params[] = $container->get($param->getClass()->getName());
+        $parameters = $reflectedClass->getConstructor()->getParameters();
+        for ($i = 0; $i < count($parameters); $i++) {
+            if ($i < count($this->params)) {
+                if ($parameters[$i]->isPassedByReference()) {
+                    $params[] = &$container->get($this->params[$i]);
+                } else {
+                    $params[] = $container->get($this->params[$i]);
+                }
+            } elseif ($parameters[$i]->getClass()) {
+                if ($parameters[$i]->isPassedByReference()) {
+                    $params[] = &$container->get($parameters[$i]->getClass()->getName());
+                } else {
+                    $params[] = $container->get($parameters[$i]->getClass()->getName());
+                }
             } else {
-                $params[] = $param->getDefaultValue();
+                $params[] = $parameters[$i]->getDefaultValue();
             }
         }
 

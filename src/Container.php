@@ -158,7 +158,11 @@ class Container implements ContainerInterface
         // recursive function to instantiate all the parameters (or get the variables) the constructor need
         foreach ($parameters as $params) {
             if ($params->getClass()) {
-                $received[] = $this->get($params->getClass()->getName());
+                if ($params->isPassedByReference()) {
+                    $received[] = &$this->get($params->getClass()->getName());
+                } else {
+                    $received[] = $this->get($params->getClass()->getName());
+                }
             } else {
                 $received[] = $params->getDefaultValue();
             }
