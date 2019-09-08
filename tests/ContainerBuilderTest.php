@@ -184,4 +184,8 @@ class ContainerBuilderTest extends TestCase
 
         $this->assertEquals(2, $container->get('Test')->randomParameter);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 2bf0fff9401d72b23ba643c48f643b00c5eed89e
 }

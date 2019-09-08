@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Hypario;
 
 use Psr\Container\ContainerInterface;
@@ -56,4 +55,5 @@ class ObjectDefinition implements DefinitionsInterface
         }
         return $reflectedClass->newInstanceArgs($params);
     }
+
 }
