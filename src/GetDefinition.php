@@ -33,10 +33,6 @@ class GetDefinition implements DefinitionsInterface
      */
     public function handle(ContainerInterface $container, array $definitions, $id)
     {
-        if ($id instanceof GetDefinition) {
-            return $container->get($id->getKey());
-        } else {
-            return $container->get($definitions[$id]->getKey());
-        }
+        return $container->get($definitions[$id]->getKey());
     }
 }

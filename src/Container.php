@@ -56,9 +56,6 @@ class Container implements ContainerInterface
             // else we try to get the instance
             $instance = $this->resolve($id);
 
-            if ($this->isFactory($id)) {
-                return $instance;
-            }
             // The instance is stocked (here the & is important) and returned
             $this->instances[$id] = &$instance;
             if (\array_key_exists($id, $this->definitions)) {
@@ -113,7 +110,8 @@ class Container implements ContainerInterface
         // we get the entry by the ReflectionClass
         if (\array_key_exists($id, $this->definitions)) {
             if ($this->definitions[$id] instanceof DefinitionsInterface) {
-                $reflectedClass = $this->definitions[$id]->handle($this, $this->definitions, $id);
+                $instance = $this->definitions[$id]->handle($this, $this->definitions, $id);
+                return $instance;
             } elseif (\is_callable($this->definitions[$id])) {
                 return $this->definitions[$id]($this);
             } elseif (is_string($this->definitions[$id])) {
@@ -169,15 +167,5 @@ class Container implements ContainerInterface
         }
 
         return $received;
-    }
-
-    private function isFactory($id): bool
-    {
-        if (\array_key_exists($id, $this->definitions)
-            and $this->definitions[$id] instanceof FactoryDefinition) {
-            return true;
-        }
-
-        return false;
     }
 }
