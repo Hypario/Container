@@ -136,14 +136,19 @@ class ContainerBuilderTest extends TestCase
 
     public function testContainerFactory()
     {
+
         $builder = new Builder();
-        $builder->addDefinitions([TestClass::class => factory(TestClass::class)]);
+        $builder->addDefinitions([
+            'a' => factory(function () {
+                return "Hello World !";
+            }),
+            'b' => factory(TestFactory::class)
+        ]);
+
         $container = $builder->build();
 
-        $call1 = $container->get(TestClass::class);
-        $call2 = $container->get(TestClass::class);
-
-        $this->assertNotSame($call1->id, $call2->id);
+        $this->assertSame('Hello World !', $container->get('a'));
+        $this->assertSame('Hello again !', $container->get('b'));
     }
 
     public function testContainerGetCallable()
@@ -177,15 +182,11 @@ class ContainerBuilderTest extends TestCase
     {
         $builder = new Builder();
         $builder->addDefinitions([
-           'Test' => object(TestClassParameters::class)
-               ->constructor(get(TestClass::class), get(TestClass2::class), 2)
+            'Test' => object(TestClassParameters::class)
+                ->constructor(get(TestClass::class), get(TestClass2::class), 2)
         ]);
         $container = $builder->build();
 
         $this->assertEquals(2, $container->get('Test')->randomParameter);
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> 2bf0fff9401d72b23ba643c48f643b00c5eed89e
 }
