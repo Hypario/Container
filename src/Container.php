@@ -2,6 +2,7 @@
 
 namespace Hypario;
 
+use Composer\Autoload\ClassLoader;
 use Hypario\Exceptions\ContainerException;
 use Hypario\Exceptions\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
@@ -109,36 +110,66 @@ class Container implements ContainerInterface
     {
         // we get the entry by the ReflectionClass
         if (\array_key_exists($id, $this->definitions)) {
+            // if defined in definitions
             if ($this->definitions[$id] instanceof DefinitionsInterface) {
+                // if we used a DefinitionInterface, return instance after a proper handle
                 $instance = $this->definitions[$id]->handle($this, $this->definitions, $id);
                 return $instance;
             } elseif (\is_callable($this->definitions[$id])) {
+                // return the called callable giving the container in the constructor
                 return $this->definitions[$id]($this);
             } elseif (is_string($this->definitions[$id])) {
+                // if is_string, maybe it's a class, we try to instantiate
                 try {
                     $reflectedClass = new \ReflectionClass($this->definitions[$id]);
+                    return $this->autowire($reflectedClass);
                 } catch (\ReflectionException $e) {
+                    // if not, return the string
                     return $this->definitions[$id];
                 }
             } else {
+                // return everything else
                 return $this->definitions[$id];
             }
         } else {
+            // if not defined, instantiate the class (we passed the has method)
+            // so we know it's a class
             $reflectedClass = new \ReflectionClass($id);
+            return $this->autowire($reflectedClass);
         }
-        if (is_object($reflectedClass) && !($reflectedClass instanceof \ReflectionClass)) {
-            return $reflectedClass;
-        } else {
-            // we know the class is instanciable because else it would have thrown a NotFoundException
-            $constructor = $reflectedClass->getConstructor();
-            // if the class have a constructor we solve it and return an instance, else an instance is returned
-            if (null !== $constructor) {
-                $parameters = $this->solveConstructor($constructor);
+    }
 
-                return $reflectedClass->newInstanceArgs($parameters);
-            }
-            return $reflectedClass->newInstance();
+    /**
+     * @return string
+     * @throws \ReflectionException
+     */
+    private function getVendor()
+    {
+        $reflection = new \ReflectionClass(ClassLoader::class);
+        return dirname($reflection->getFileName(), 2);
+    }
+
+    /**
+     * @param \ReflectionClass $reflectedClass
+     * @return object
+     * @throws \ReflectionException
+     */
+    private function autowire(\ReflectionClass $reflectedClass)
+    {
+        // path to the vendor directory prepared for a regex
+        $vendorPath = addcslashes($this->getVendor(), '/');
+
+        // we know the class is instanciable because else it would have thrown a NotFoundException
+        $constructor = $reflectedClass->getConstructor();
+
+        // if the class have a constructor we solve it and return an instance, else an instance is returned
+        // and not in the vendor directory
+        if (null !== $constructor && !preg_match("/$vendorPath*/", $reflectedClass->getFileName())) {
+            $parameters = $this->solveConstructor($constructor);
+
+            return $reflectedClass->newInstanceArgs($parameters);
         }
+        return $reflectedClass->newInstance();
     }
 
     /**
