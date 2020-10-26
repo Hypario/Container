@@ -114,6 +114,28 @@ class ContainerBuilderTest extends TestCase
         $this->assertFalse($container->has(TestInterface::class));
     }
 
+    public function testAutowireInterface()
+    {
+        $builder = new Builder();
+        $builder->addDefinitions([
+            TestInterface::class => TestClassImplementsInterface::class
+        ]);
+
+        $container = $builder->build();
+        $this->assertInstanceOf(TestClassImplementsInterface::class, $container->get(TestInterface::class));
+    }
+
+    public function testAutowireInterfaceWithDefaultParameter()
+    {
+        $builder = new Builder();
+        $container = $builder->build();
+
+        $this->assertInstanceOf(
+            TestClassParameters2::class,
+            $container->get(TestClassParameters2::class)
+        );
+    }
+
     public function testContainerGetMethodFail()
     {
         $builder = new Builder();

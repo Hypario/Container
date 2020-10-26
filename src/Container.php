@@ -3,7 +3,6 @@
 namespace Hypario;
 
 use Composer\Autoload\ClassLoader;
-use Hypario\Exceptions\ContainerException;
 use Hypario\Exceptions\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -186,9 +185,10 @@ class Container implements ContainerInterface
         $received = [];
         // recursive function to instantiate all the parameters (or get the variables) the constructor need
         foreach ($parameters as $params) {
-            if ($params->getClass()) {
+            if ($params->getClass() && !$params->allowsNull()) {
                 if ($params->isPassedByReference()) {
-                    $received[] = &$this->get($params->getClass()->getName());
+                    $class = $this->get($params->getClass()->getName());
+                    $received[] = &$class;
                 } else {
                     $received[] = $this->get($params->getClass()->getName());
                 }
