@@ -6,9 +6,9 @@ use Psr\Container\ContainerInterface;
 
 class ObjectDefinition implements DefinitionsInterface
 {
-
     /**
-     * Store all the parameters for the constructor
+     * Store all the parameters for the constructor.
+     *
      * @var array
      */
     public $params;
@@ -20,7 +20,6 @@ class ObjectDefinition implements DefinitionsInterface
 
     /**
      * ObjectDefinition constructor.
-     * @param string|null $className
      */
     public function __construct(?string $className = null)
     {
@@ -29,18 +28,20 @@ class ObjectDefinition implements DefinitionsInterface
 
     /**
      * @param mixed ...$params
+     *
      * @return ObjectDefinition
      */
     public function constructor(...$params): self
     {
         $this->params = $params;
+
         return $this;
     }
 
     public function handle(ContainerInterface $container, array $definitions, $id)
     {
         // get the wanted class
-        if (!is_null($this->className)) {
+        if (null !== $this->className) {
             $reflectedClass = new \ReflectionClass($this->className);
         } else {
             $reflectedClass = new \ReflectionClass($id);
@@ -51,19 +52,16 @@ class ObjectDefinition implements DefinitionsInterface
 
         // the needed parameters
         $parameters = $reflectedClass->getConstructor()->getParameters();
-        for ($i = 0; $i < count($parameters); $i++) {
-
+        for ($i = 0; $i < \count($parameters); ++$i) {
             // if we already have those params
-            if ($i < count($this->params)) {
-
-                // look if the get function is used, 
+            if ($i < \count($this->params)) {
+                // look if the get function is used,
                 if ($parameters[$i] instanceof GetDefinition) {
                     $this->params[$i] = $this->params[$i]->handle($container, $definitions, $id);
                 }
 
                 // look if passed by reference,
                 if ($parameters[$i]->isPassedByReference()) {
-
                     // look if it needs the container to instantiate classes
                     // or put directly the variable
                     if ($container->has($this->params[$i])) {
@@ -72,7 +70,6 @@ class ObjectDefinition implements DefinitionsInterface
                         $var = $this->params[$i];
                     }
                     $params[] = &$var;
-
                 } else {
                     // it isn't passed by reference
                     // but we do the same verification
@@ -91,7 +88,6 @@ class ObjectDefinition implements DefinitionsInterface
                 } else {
                     $params[] = $container->get($parameters[$i]->getClass()->getName());
                 }
-
             } else {
                 $params[] = $parameters[$i]->getDefaultValue();
             }
@@ -100,5 +96,4 @@ class ObjectDefinition implements DefinitionsInterface
         // inject the wanted vars to the constr
         return $reflectedClass->newInstanceArgs($params);
     }
-
 }

@@ -22,8 +22,6 @@ class Container implements ContainerInterface
 
     /**
      * Container constructor.
-     *
-     * @param array $definitions
      */
     public function __construct(array $definitions = [])
     {
@@ -34,13 +32,13 @@ class Container implements ContainerInterface
     /**
      * Finds an entry of the container by its identifier and returns it.
      *
-     * @param string $id Identifier of the entry to look for.
+     * @param string $id identifier of the entry to look for
      *
-     * @throws NotFoundExceptionInterface  No entry was found for **this** identifier.
-     * @throws ContainerExceptionInterface Error while retrieving the entry.
+     * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
+     * @throws ContainerExceptionInterface error while retrieving the entry
      * @throws \ReflectionException        Class does not exist
      *
-     * @return mixed Entry.
+     * @return mixed entry
      */
     public function get($id)
     {
@@ -74,9 +72,7 @@ class Container implements ContainerInterface
      * `has($id)` returning true does not mean that `get($id)` will not throw an exception.
      * It does however mean that `get($id)` will not throw a `NotFoundExceptionInterface`.
      *
-     * @param string $id Identifier of the entry to look for.
-     *
-     * @return bool
+     * @param string $id identifier of the entry to look for
      */
     public function has($id): bool
     {
@@ -92,6 +88,7 @@ class Container implements ContainerInterface
             if ($class->isInstantiable()) {
                 return true;
             }
+
             return false;
         } catch (\ReflectionException $e) {
             return false;
@@ -113,14 +110,16 @@ class Container implements ContainerInterface
             if ($this->definitions[$id] instanceof DefinitionsInterface) {
                 // if we used a DefinitionInterface, return instance after a proper handle
                 $instance = $this->definitions[$id]->handle($this, $this->definitions, $id);
+
                 return $instance;
             } elseif (\is_callable($this->definitions[$id])) {
                 // return the called callable giving the container in the constructor
                 return $this->definitions[$id]($this);
-            } elseif (is_string($this->definitions[$id])) {
+            } elseif (\is_string($this->definitions[$id])) {
                 // if is_string, maybe it's a class, we try to instantiate
                 try {
                     $reflectedClass = new \ReflectionClass($this->definitions[$id]);
+
                     return $this->autowire($reflectedClass);
                 } catch (\ReflectionException $e) {
                     // if not, return the string
@@ -134,24 +133,27 @@ class Container implements ContainerInterface
             // if not defined, instantiate the class (we passed the has method)
             // so we know it's a class
             $reflectedClass = new \ReflectionClass($id);
+
             return $this->autowire($reflectedClass);
         }
     }
 
     /**
-     * @return string
      * @throws \ReflectionException
+     *
+     * @return string
      */
     private function getVendor()
     {
         $reflection = new \ReflectionClass(ClassLoader::class);
-        return dirname($reflection->getFileName(), 2);
+
+        return \dirname($reflection->getFileName(), 2);
     }
 
     /**
-     * @param \ReflectionClass $reflectedClass
-     * @return object
      * @throws \ReflectionException
+     *
+     * @return object
      */
     private function autowire(\ReflectionClass $reflectedClass)
     {
@@ -168,15 +170,12 @@ class Container implements ContainerInterface
 
             return $reflectedClass->newInstanceArgs($parameters);
         }
+
         return $reflectedClass->newInstance();
     }
 
     /**
-     * @param \ReflectionMethod $constructor
-     *
      * @throws \ReflectionException
-     *
-     * @return array
      */
     private function solveConstructor(\ReflectionMethod $constructor): array
     {

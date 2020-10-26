@@ -1,11 +1,9 @@
 <?php
 
-
 namespace Test;
 
 class TestClassParameters
 {
-
     public $a;
     public $b;
     public $randomParameter;

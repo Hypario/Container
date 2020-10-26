@@ -12,7 +12,6 @@ use PHPUnit\Framework\TestCase;
 
 class ContainerBuilderTest extends TestCase
 {
-
     public function testBuildMethod()
     {
         $builder = new Builder();
@@ -158,11 +157,10 @@ class ContainerBuilderTest extends TestCase
 
     public function testContainerFactory()
     {
-
         $builder = new Builder();
         $builder->addDefinitions([
             'a' => factory(function () {
-                return "Hello World !";
+                return 'Hello World !';
             }),
             'b' => factory(TestFactory::class)
         ]);
@@ -209,6 +207,6 @@ class ContainerBuilderTest extends TestCase
         ]);
         $container = $builder->build();
 
-        $this->assertEquals(2, $container->get('Test')->randomParameter);
+        $this->assertSame(2, $container->get('Test')->randomParameter);
     }
 }

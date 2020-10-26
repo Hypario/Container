@@ -9,14 +9,14 @@ if (!\function_exists('Hypario\factory')) {
     }
 }
 
-if (!function_exists('Hypario\get')) {
+if (!\function_exists('Hypario\get')) {
     function get($key)
     {
         return new GetDefinition($key);
     }
 }
 
-if (!function_exists('Hypario\object')) {
+if (!\function_exists('Hypario\object')) {
     function object($className = null)
     {
         return new ObjectDefinition($className);
