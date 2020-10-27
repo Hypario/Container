@@ -5,10 +5,14 @@ namespace Test;
 use Hypario\Builder;
 use Hypario\Container;
 use Hypario\Exceptions\NotFoundException;
-use function Hypario\factory;
-use function Hypario\get;
-use function Hypario\object;
 use PHPUnit\Framework\TestCase;
+use Test\helpers\TestClass;
+use Test\helpers\TestClass2;
+use Test\helpers\TestClassImplementsInterface;
+use Test\helpers\TestClassParameters;
+use Test\helpers\TestClassParameters2;
+use Test\helpers\TestClassParameters3;
+use Test\helpers\TestInterface;
 
 class ContainerBuilderTest extends TestCase
 {
@@ -61,7 +65,7 @@ class ContainerBuilderTest extends TestCase
     {
         // create a builder
         $builder = new Builder();
-        $builder->addDefinitions('tests/configTest.php');
+        $builder->addDefinitions('tests/helpers/configs/configTest.php');
 
         // test if the definition is added correctly
         $container = $builder->build();
@@ -73,8 +77,8 @@ class ContainerBuilderTest extends TestCase
     {
         // create a builder and add definitions
         $builder = new Builder();
-        $builder->addDefinitions('tests/configTest.php');
-        $builder->addDefinitions('tests/configTest2.php');
+        $builder->addDefinitions('tests/helpers/configs/configTest.php');
+        $builder->addDefinitions('tests/helpers/configs/configTest2.php');
 
         // test if the definitions are added correctly
         $container = $builder->build();
@@ -87,8 +91,8 @@ class ContainerBuilderTest extends TestCase
     {
         // create a builder and add definitions
         $builder = new Builder();
-        $builder->addDefinitions('tests/configTest.php');
-        $builder->addDefinitions('tests/configTest3.php');
+        $builder->addDefinitions('tests/helpers/configs/configTest.php');
+        $builder->addDefinitions('tests/helpers/configs/configTest3.php');
 
         // test if the definitions are added correctly
         $container = $builder->build();
@@ -155,22 +159,6 @@ class ContainerBuilderTest extends TestCase
         $this->assertSame($call1->id, $call2->id);
     }
 
-    public function testContainerFactory()
-    {
-        $builder = new Builder();
-        $builder->addDefinitions([
-            'a' => factory(function () {
-                return 'Hello World !';
-            }),
-            'b' => factory(TestFactory::class)
-        ]);
-
-        $container = $builder->build();
-
-        $this->assertSame('Hello World !', $container->get('a'));
-        $this->assertSame('Hello again !', $container->get('b'));
-    }
-
     public function testContainerGetCallable()
     {
         $builder = new Builder();
@@ -190,6 +178,17 @@ class ContainerBuilderTest extends TestCase
         $this->assertInstanceOf(TestClass2::class, $container->get(TestClass2::class));
     }
 
+    public function testContainerGetInstantiatedClass()
+    {
+        $builder = new Builder();
+        $builder->addDefinitions([
+            'instance' => new TestClass()
+        ]);
+
+        $container = $builder->build();
+        $this->assertInstanceOf(TestClass::class, $container->get('instance'));
+    }
+
     public function testContainerGetClassWithClassParameters()
     {
         $builder = new Builder();
@@ -198,15 +197,11 @@ class ContainerBuilderTest extends TestCase
         $this->assertInstanceOf(TestClassParameters::class, $container->get(TestClassParameters::class));
     }
 
-    public function testObjectDefinition()
+    public function testContainerGetClassWithClassReferenceParameters()
     {
         $builder = new Builder();
-        $builder->addDefinitions([
-            'Test' => object(TestClassParameters::class)
-                ->constructor(get(TestClass::class), get(TestClass2::class), 2)
-        ]);
         $container = $builder->build();
 
-        $this->assertSame(2, $container->get('Test')->randomParameter);
+        $this->assertInstanceOf(TestClassParameters3::class, $container->get(TestClassParameters3::class));
     }
 }
