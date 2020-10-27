@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/Hypario/Container.svg?branch=master)](https://travis-ci.org/Hypario/Container)
+[![Coverage Status](https://coveralls.io/repos/github/Hypario/Container/badge.svg?branch=master)](https://coveralls.io/github/Hypario/Container?branch=master)
+
 # What is this ?
 
 This library is a Dependency Injection Container written in PHP.
