@@ -7,6 +7,7 @@ use Hypario\Exceptions\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionType;
 
 class Container implements ContainerInterface
 {
@@ -34,11 +35,11 @@ class Container implements ContainerInterface
      *
      * @param string $id identifier of the entry to look for
      *
-     * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
+     * @return mixed entry
      * @throws ContainerExceptionInterface error while retrieving the entry
      * @throws \ReflectionException        Class does not exist
      *
-     * @return mixed entry
+     * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
      */
     public function get($id)
     {
@@ -76,6 +77,11 @@ class Container implements ContainerInterface
      */
     public function has($id): bool
     {
+        // if the entry is an instance of DefinitionsInterface, we know how to instantiate it
+        if ($id instanceof DefinitionsInterface) {
+            return true;
+        }
+
         // if the entry is in our definitions or instances we return true
         if (@\array_key_exists($id, $this->definitions) ||
             @\array_key_exists($id, $this->instances)
@@ -98,9 +104,9 @@ class Container implements ContainerInterface
     /**
      * @param $id
      *
+     * @return mixed
      * @throws \ReflectionException
      *
-     * @return mixed
      */
     private function resolve($id)
     {
@@ -139,9 +145,9 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @return string
      * @throws \ReflectionException
      *
-     * @return string
      */
     private function getVendor()
     {
@@ -151,21 +157,21 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @return object
      * @throws \ReflectionException
      *
-     * @return object
      */
     private function autowire(\ReflectionClass $reflectedClass)
     {
         // path to the vendor directory prepared for a regex
-        $vendorPath = addcslashes($this->getVendor(), '/');
+        $vendorPath = addcslashes($this->getVendor(), '/\\');
 
         // we know the class is instanciable because else it would have thrown a NotFoundException
         $constructor = $reflectedClass->getConstructor();
 
         // if the class have a constructor we solve it and return an instance, else an instance is returned
         // and not in the vendor directory
-        if (null !== $constructor && !preg_match("/$vendorPath*/", $reflectedClass->getFileName())) {
+        if (null !== $constructor && !preg_match("/^${vendorPath}\\.*/", $reflectedClass->getFileName())) {
             $parameters = $this->solveConstructor($constructor);
 
             return $reflectedClass->newInstanceArgs($parameters);
@@ -182,19 +188,42 @@ class Container implements ContainerInterface
         // we get the parameters needed for the class
         $parameters = $constructor->getParameters();
         $received = [];
+
+        foreach ($constructor->getParameters() as $index => $parameter) {
+            if ($parameter->isOptional()) {
+                continue;
+            }
+
+            $type = $parameter->getType();
+            $class = null !== $type &&
+            $type instanceof \ReflectionNamedType
+            && !$type->isBuiltin() ? $type->getName() : null;
+
+            if ($class) {
+                if ($parameter->isPassedByReference()) {
+                    $tmp_class = $this->get($class);
+                    $received[] = &$tmp_class;
+                } else {
+                    $received[] = $this->get($class);
+                }
+            } else {
+                $received[] = $parameter->getDefaultValue();
+            }
+        }
+
         // recursive function to instantiate all the parameters (or get the variables) the constructor need
-        foreach ($parameters as $params) {
-            if ($params->getClass() && !$params->allowsNull()) {
+        /*foreach ($parameters as $params) {
+            if ($params->getType() && !$params->allowsNull()) {
                 if ($params->isPassedByReference()) {
-                    $class = $this->get($params->getClass()->getName());
+                    $class = $this->get($params->getType()->getName());
                     $received[] = &$class;
                 } else {
-                    $received[] = $this->get($params->getClass()->getName());
+                    $received[] = $this->get($params->getType()->getName());
                 }
             } else {
                 $received[] = $params->getDefaultValue();
             }
-        }
+        }*/
 
         return $received;
     }
