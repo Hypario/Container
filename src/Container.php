@@ -7,7 +7,6 @@ use Hypario\Exceptions\NotFoundException;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use ReflectionType;
 
 class Container implements ContainerInterface
 {
@@ -35,11 +34,11 @@ class Container implements ContainerInterface
      *
      * @param string $id identifier of the entry to look for
      *
-     * @return mixed entry
      * @throws ContainerExceptionInterface error while retrieving the entry
      * @throws \ReflectionException        Class does not exist
-     *
      * @throws NotFoundExceptionInterface  no entry was found for **this** identifier
+     *
+     * @return mixed entry
      */
     public function get($id)
     {
@@ -104,9 +103,9 @@ class Container implements ContainerInterface
     /**
      * @param $id
      *
-     * @return mixed
      * @throws \ReflectionException
      *
+     * @return mixed
      */
     private function resolve($id)
     {
@@ -145,9 +144,9 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return string
      * @throws \ReflectionException
      *
+     * @return string
      */
     private function getVendor()
     {
@@ -157,9 +156,9 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @return object
      * @throws \ReflectionException
      *
+     * @return object
      */
     private function autowire(\ReflectionClass $reflectedClass)
     {
